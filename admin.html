@@ -5,81 +5,127 @@
     <title>会员中心</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <h1>🌟 会员专属内容</h1>
     <p>恭喜，这是一个受保护的页面。只有登录用户才能看到。</p>
-    <p><a href="https://app.netlify.com/sites/serene-flan-8f8d9f/forms" target="_blank">进入后台查看客户留言</a></p>
     <div data-netlify-identity-button></div>
     <p><a href="/">返回首页</a></p>
 
     <div id="admin-tools" style="display: none; border: 2px dashed red; padding: 10px;">
         <h3>🛠 管理员工具箱</h3>
+        <div style="height: 300px; margin-bottom: 30px;">
+            <canvas id="submissionsChart"></canvas>
+        </div>
         <p>只有拥有 "admin" 标签的用户才能看到这个区域。</p>
+        <p><a href="https://app.netlify.com/sites/serene-flan-8f8d9f/forms" target="_blank">进入后台查看客户留言</a></p>
         <ul id="submission-list">正在加载留言...</ul>
         <button onclick="fetchSubmissions()">刷新数据</button>
     </div>
+</body>
+<script>
+    // 在 script 标签的最开始处添加
+    netlifyIdentity.init({
+    locale: 'zh' 
+    });
+</script>
+<script>
+    let myChart; // 全局变量，方便刷新数据
+    async function fetchSubmissions() {
+        const listEl = document.getElementById('submission-list');
+        try {
+            // 调用我们之前建立的无服务器函数
+            const response = await fetch('/.netlify/functions/get-submissions');
+            const data = await response.json();
 
-    <script>
-        async function fetchSubmissions() {
-            const listEl = document.getElementById('submission-list');
-            try {
-                // 调用我们之前建立的无服务器函数
-                const response = await fetch('/.netlify/functions/get-submissions');
-                const data = await response.json();
+            // 1. 渲染图表
+            renderChart(data);
+
+            const latest = data.slice(0, 5); // 只显示最近5条
+            
+            listEl.innerHTML = latest.map(sub => {
+                const { name, email, message } = sub.data;
+                const date = new Date(sub.created_at).toLocaleString('zh-CN');
                 
-                const latest = data.slice(0, 5); // 只显示最近5条
-                
-                listEl.innerHTML = latest.map(sub => {
-                    const { name, email, message } = sub.data;
-                    const date = new Date(sub.created_at).toLocaleString('zh-CN');
-                    
-                    return `
-                        <li class="submission-card">
-                            <div class="sub-header">
-                                <span class="sub-name">👤 ${name}</span>
-                                <span>📅 ${date}</span>
-                            </div>
-                            <span class="sub-msg">💬 ${message}</span>
-                            <a href="mailto:${email}?subject=关于您在站点的留言反馈&body=您好 ${name}，我们收到了您的留言：'${message}'%0A%0A---%0A我们的回复：" 
-                            class="reply-btn">
-                            📩 一键回信
-                            </a>
-                        </li>
-                    `;
-                }).join('') || '<li>目前还没有收到任何留言。</li>';
-                
-            } catch (err) {
-                listEl.innerHTML = '<li style="color:red;">数据加载失败，请刷新页面重试。</li>';
+                return `
+                    <li class="submission-card">
+                        <div class="sub-header">
+                            <span class="sub-name">👤 ${name}</span>
+                            <span>📅 ${date}</span>
+                        </div>
+                        <span class="sub-msg">💬 ${message}</span>
+                        <a href="mailto:${email}?subject=关于您在站点的留言反馈&body=您好 ${name}，我们收到了您的留言：'${message}'%0A%0A---%0A我们的回复：" 
+                        class="reply-btn">
+                        📩 一键回信
+                        </a>
+                    </li>
+                `;
+            }).join('') || '<li>目前还没有收到任何留言。</li>';
+            
+        } catch (err) {
+            listEl.innerHTML = '<li style="color:red;">数据加载失败，请刷新页面重试。</li>';
+        }
+    }
+
+    function renderChart(submissions) {
+        const ctx = document.getElementById('submissionsChart').getContext('2d');
+        
+        // --- 数据处理：统计最近 7 天的留言数 ---
+        const last7Days = [...Array(7)].map((_, i) => {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            return d.toISOString().split('T')[0];
+        }).reverse();
+
+        const counts = last7Days.map(date => {
+            // 过滤出日期匹配的留言
+            return submissions.filter(s => s.created_at.startsWith(date)).length;
+        });
+
+        // --- 销毁旧图表（防止刷新时重叠） ---
+        if (myChart) myChart.destroy();
+
+        // --- 创建新图表 ---
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: last7Days.map(d => d.slice(5)), // 只显示月-日
+                datasets: [{
+                    label: '每日留言趋势',
+                    data: counts,
+                    borderColor: '#00ad9f',
+                    backgroundColor: 'rgba(0, 173, 159, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            }
+        });
+    }
+    // 在身份验证成功后触发
+    netlifyIdentity.on('init', user => {
+        if (!user) {
+            window.location.href = "/";
+        } else {
+            const roles = user.app_metadata.roles || [];
+            if (roles.includes("admin")) {
+                document.getElementById('admin-tools').style.display = 'block';
+                fetchSubmissions(); // 管理员登录后自动抓取
             }
         }
-
-        // 在身份验证成功后触发
-        netlifyIdentity.on('init', user => {
-            if (!user) {
-                window.location.href = "/";
-            } else {
-                const roles = user.app_metadata.roles || [];
-                if (roles.includes("admin")) {
-                    document.getElementById('admin-tools').style.display = 'block';
-                    fetchSubmissions(); // 管理员登录后自动抓取
-                }
-            }
-        });
-    </script>
-    <script>
-        // 如果用户在当前页登出，也跳转回首页
-        netlifyIdentity.on('logout', () => {
-            window.location.href = "/";
-        });
-    </script>
-    <script>
-        // 在 script 标签的最开始处添加
-        netlifyIdentity.init({
-        locale: 'zh' 
-        });
-    </script>
-</body>
+    });
+</script>
+<script>
+    // 如果用户在当前页登出，也跳转回首页
+    netlifyIdentity.on('logout', () => {
+        window.location.href = "/";
+    });
+</script>
 <style>
     /* 管理员工具箱容器 */
     #admin-tools {

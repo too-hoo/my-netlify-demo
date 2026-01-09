@@ -8,7 +8,7 @@
 </head>
 <body>
     <header>
-        <h1>欢迎来到我的站点</h1>
+        <h1>欢迎来到我的客服站点</h1>
         <div id="auth-controls">
             <div data-netlify-identity-menu></div>
         </div>
@@ -39,7 +39,12 @@
             <p>🌟 检测到您已登录，点击进入 <a href="/admin.html">会员专属页面</a></p>
         </section>
     </main>
-
+    <script>
+        // 在 script 标签的最开始处添加
+        netlifyIdentity.init({
+        locale: 'zh' 
+        });
+    </script>
     <script>
         // 处理登录跳转逻辑
         netlifyIdentity.on('login', user => {
@@ -49,11 +54,6 @@
             document.getElementById('member-link').style.display = 'none';
         });
     </script>
-    <script>
-        // 在 script 标签的最开始处添加
-        netlifyIdentity.init({
-        locale: 'zh' 
-        });
-    </script>
+
 </body>
 </html>
