@@ -15,7 +15,7 @@
     <main>
         <div id="auth-status" style="display:none;">
             <div>
-                <img id="user-avatar" src="" class="avatar" style="display:none;">
+                <img id="user-avatar" src="" class="avatar" height="100" width="100" style="display:none;">
                 <span>欢迎回来，<strong id="user-name"></strong></span>
             </div>
             <div>
@@ -37,7 +37,7 @@
     </main>
 
     <script>
-        netlifyIdentity.init({ locale: 'zh' });
+        // netlifyIdentity.init({ locale: 'zh' });
 
         function updateUI(user) {
             const statusDiv = document.getElementById('auth-status');
