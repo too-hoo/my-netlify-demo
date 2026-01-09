@@ -1,0 +1,5 @@
+body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; line-height: 1.6; }
+header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; margin-bottom: 20px; }
+form { background: #f9f9f9; padding: 20px; border-radius: 8px; }
+input, textarea { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
+button { background: #00ad9f; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }

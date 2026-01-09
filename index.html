@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Netlify 全栈静态站 Demo</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+</head>
+<body>
+    <header>
+        <h1>欢迎来到我的站点</h1>
+        <div id="auth-controls">
+            <div data-netlify-identity-menu></div>
+        </div>
+    </header>
+
+    <main>
+        <section>
+            <h2>联系我们</h2>
+            <form name="contact" method="POST" data-netlify="true">
+                <p>
+                    <label>您的姓名: <input type="text" name="name" required /></label>
+                </p>
+                <p>
+                    <label>您的邮箱: <input type="email" name="email" required /></label>
+                </p>
+                <p>
+                    <label>留言信息: <textarea name="message"></textarea></label>
+                </p>
+                <p>
+                    <button type="submit">提交申请</button>
+                </p>
+            </form>
+        </section>
+
+        <section id="member-link" style="display: none;">
+            <hr>
+            <p>🌟 检测到您已登录，点击进入 <a href="/admin.html">会员专属页面</a></p>
+        </section>
+    </main>
+
+    <script>
+        // 处理登录跳转逻辑
+        netlifyIdentity.on('login', user => {
+            document.getElementById('member-link').style.display = 'block';
+        });
+        netlifyIdentity.on('logout', () => {
+            document.getElementById('member-link').style.display = 'none';
+        });
+    </script>
+</body>
+</html>

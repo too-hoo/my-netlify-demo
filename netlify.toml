@@ -1,0 +1,15 @@
+[build]
+  publish = "."
+
+# 处理 Identity 页面刷新时的重定向问题
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# （高级）如果你在 UI 中启用了 Role-based 访问，可以取消下方注释
+# [[redirects]]
+#   from = "/admin.html"
+#   to = "/index.html"
+#   status = 401
+#   conditions = {Role = ["!admin"]}

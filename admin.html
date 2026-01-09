@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>会员中心</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+</head>
+<body>
+    <h1>🌟 会员专属内容</h1>
+    <p>恭喜，这是一个受保护的页面。只有登录用户才能看到。</p>
+    
+    <div data-netlify-identity-button></div>
+    <p><a href="/">返回首页</a></p>
+
+    <script>
+        // 如果未登录，直接重定向回首页
+        const user = netlifyIdentity.currentUser();
+        if (!user) {
+            window.location.href = "/";
+        }
+    </script>
+</body>
+</html>
