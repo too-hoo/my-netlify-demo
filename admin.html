@@ -24,16 +24,33 @@
         async function fetchSubmissions() {
             const listEl = document.getElementById('submission-list');
             try {
-                // 直接访问 Netlify 自动生成的函数路径
+                // 调用我们之前建立的无服务器函数
                 const response = await fetch('/.netlify/functions/get-submissions');
                 const data = await response.json();
                 
-                const latest = data.slice(0, 5);
-                listEl.innerHTML = latest.map(sub => `
-                    <li><strong>${sub.data.name}</strong>: ${sub.data.message}</li>
-                `).join('') || '暂无留言';
+                const latest = data.slice(0, 5); // 只显示最近5条
+                
+                listEl.innerHTML = latest.map(sub => {
+                    const { name, email, message } = sub.data;
+                    const date = new Date(sub.created_at).toLocaleString('zh-CN');
+                    
+                    return `
+                        <li class="submission-card">
+                            <div class="sub-header">
+                                <span class="sub-name">👤 ${name}</span>
+                                <span>📅 ${date}</span>
+                            </div>
+                            <span class="sub-msg">💬 ${message}</span>
+                            <a href="mailto:${email}?subject=关于您在站点的留言反馈&body=您好 ${name}，我们收到了您的留言：'${message}'%0A%0A---%0A我们的回复：" 
+                            class="reply-btn">
+                            📩 一键回信
+                            </a>
+                        </li>
+                    `;
+                }).join('') || '<li>目前还没有收到任何留言。</li>';
+                
             } catch (err) {
-                listEl.innerHTML = '加载失败';
+                listEl.innerHTML = '<li style="color:red;">数据加载失败，请刷新页面重试。</li>';
             }
         }
 
@@ -56,5 +73,78 @@
             window.location.href = "/";
         });
     </script>
+    <script>
+        // 在 script 标签的最开始处添加
+        netlifyIdentity.init({
+        locale: 'zh' 
+        });
+    </script>
 </body>
+<style>
+    /* 管理员工具箱容器 */
+    #admin-tools {
+        display: none;
+        background: #ffffff;
+        border: 1px dashed #ff4d4f;
+        border-radius: 12px;
+        padding: 24px;
+        margin-top: 30px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    /* 留言列表样式 */
+    #submission-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .submission-card {
+        background: #f9f9f9;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-left: 4px solid #00ad9f;
+        transition: transform 0.2s;
+    }
+
+    .submission-card:hover {
+        transform: translateX(5px);
+    }
+
+    .sub-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 0.9em;
+        color: #888;
+    }
+
+    .sub-name {
+        color: #333;
+        font-weight: bold;
+        font-size: 1.1em;
+    }
+
+    .sub-msg {
+        display: block;
+        margin: 10px 0;
+        line-height: 1.5;
+        color: #444;
+    }
+
+    /* 回信按钮样式 */
+    .reply-btn {
+        display: inline-block;
+        padding: 6px 12px;
+        background-color: #00ad9f;
+        color: white !important;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 0.85em;
+    }
+
+    .reply-btn:hover {
+        background-color: #008a7f;
+    }
+</style>
 </html>
