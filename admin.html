@@ -9,16 +9,36 @@
 <body>
     <h1>🌟 会员专属内容</h1>
     <p>恭喜，这是一个受保护的页面。只有登录用户才能看到。</p>
-    
+    <p><a href="https://app.netlify.com/sites/serene-flan-8f8d9f/forms" target="_blank">进入后台查看客户留言</a></p>
     <div data-netlify-identity-button></div>
     <p><a href="/">返回首页</a></p>
 
+    <div id="admin-tools" style="display: none; border: 2px dashed red; padding: 10px;">
+        <h3>🛠 管理员工具箱</h3>
+        <p>只有拥有 "admin" 标签的用户才能看到这个区域。</p>
+        <button onclick="alert('执行管理操作')">删除全站内容（演示）</button>
+    </div>
+
     <script>
-        // 如果未登录，直接重定向回首页
-        const user = netlifyIdentity.currentUser();
-        if (!user) {
+        // 必须等待 init 事件完成后再检查状态
+        netlifyIdentity.on('init', user => {
+            if (!user) {
+                // 只有确认没登录时才跳转
+                window.location.href = "/";
+            }else {
+                // 检查用户是否拥有 admin 角色
+                const roles = user.app_metadata.roles || [];
+                if (roles.includes("admin")) {
+                    document.getElementById('admin-tools').style.display = 'block';
+                    console.log("检测到管理员权限");
+                }
+            }
+        });
+
+        // 如果用户在当前页登出，也跳转回首页
+        netlifyIdentity.on('logout', () => {
             window.location.href = "/";
-        }
+        });
     </script>
 </body>
 </html>

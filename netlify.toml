@@ -6,6 +6,7 @@
   from = "/*"
   to = "/index.html"
   status = 200
+  force = false
 
 # （高级）如果你在 UI 中启用了 Role-based 访问，可以取消下方注释
 # [[redirects]]
