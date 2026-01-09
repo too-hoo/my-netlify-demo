@@ -16,25 +16,41 @@
     <div id="admin-tools" style="display: none; border: 2px dashed red; padding: 10px;">
         <h3>🛠 管理员工具箱</h3>
         <p>只有拥有 "admin" 标签的用户才能看到这个区域。</p>
-        <button onclick="alert('执行管理操作')">删除全站内容（演示）</button>
+        <ul id="submission-list">正在加载留言...</ul>
+        <button onclick="fetchSubmissions()">刷新数据</button>
     </div>
 
     <script>
-        // 必须等待 init 事件完成后再检查状态
+        async function fetchSubmissions() {
+            const listEl = document.getElementById('submission-list');
+            try {
+                // 直接访问 Netlify 自动生成的函数路径
+                const response = await fetch('/.netlify/functions/get-submissions');
+                const data = await response.json();
+                
+                const latest = data.slice(0, 5);
+                listEl.innerHTML = latest.map(sub => `
+                    <li><strong>${sub.data.name}</strong>: ${sub.data.message}</li>
+                `).join('') || '暂无留言';
+            } catch (err) {
+                listEl.innerHTML = '加载失败';
+            }
+        }
+
+        // 在身份验证成功后触发
         netlifyIdentity.on('init', user => {
             if (!user) {
-                // 只有确认没登录时才跳转
                 window.location.href = "/";
-            }else {
-                // 检查用户是否拥有 admin 角色
+            } else {
                 const roles = user.app_metadata.roles || [];
                 if (roles.includes("admin")) {
                     document.getElementById('admin-tools').style.display = 'block';
-                    console.log("检测到管理员权限");
+                    fetchSubmissions(); // 管理员登录后自动抓取
                 }
             }
         });
-
+    </script>
+    <script>
         // 如果用户在当前页登出，也跳转回首页
         netlifyIdentity.on('logout', () => {
             window.location.href = "/";
