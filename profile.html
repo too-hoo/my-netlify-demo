@@ -2,80 +2,46 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>个人资料设置</title>
+    <title>个人资料 - 客服门户</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-    <style>
-        .profile-container { max-width: 400px; margin: 50px auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; }
-        .avatar-preview { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; display: block; margin: 0 auto 20px; border: 2px solid #00ad9f; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input { width: 100%; padding: 8px; box-sizing: border-box; }
-        .save-btn { width: 100%; padding: 10px; background: #00ad9f; color: white; border: none; border-radius: 4px; cursor: pointer; }
-    </style>
 </head>
 <body>
-    <div class="profile-container">
-        <h2 style="text-align: center;">编辑个人资料</h2>
-        
-        <img id="avatar-img" src="https://via.placeholder.com/80" class="avatar-preview">
-        
+    <header><h1>账户设置</h1><a href="/">返回首页</a></header>
+    <main>
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <img id="current-avatar" src="https://via.placeholder.com/100" class="avatar" style="width:100px; height:100px;">
+        </div>
         <form id="profile-form">
-            <div class="form-group">
-                <label>我的昵称：</label>
-                <input type="text" id="nickname" placeholder="输入新的昵称" required>
-            </div>
-            <div class="form-group">
-                <label>头像链接 (URL)：</label>
-                <input type="url" id="avatar-url" placeholder="https://...">
-            </div>
-            <button type="submit" class="save-btn">保存修改</button>
+            <p><label>昵称: <input type="text" id="new-name" required></label></p>
+            <p><label>头像图片链接: <input type="url" id="new-avatar" placeholder="https://..."></label></p>
+            <button type="submit">保存更新</button>
         </form>
-        
-        <p style="text-align: center; margin-top: 15px;">
-            <a href="/">返回首页</a>
-        </p>
-    </div>
-
+    </main>
     <script>
-        const nicknameInput = document.getElementById('nickname');
-        const avatarUrlInput = document.getElementById('avatar-url');
-        const avatarImg = document.getElementById('avatar-img');
-
-        // 1. 页面加载时获取当前资料
+        netlifyIdentity.init({ locale: 'zh' });
+        
         netlifyIdentity.on('init', user => {
-            if (!user) {
-                window.location.href = "/";
-            } else {
-                const metadata = user.user_metadata;
-                nicknameInput.value = metadata.full_name || "";
-                avatarUrlInput.value = metadata.avatar_url || "";
-                if (metadata.avatar_url) avatarImg.src = metadata.avatar_url;
-            }
+            if (!user) window.location.href = "/";
+            document.getElementById('new-name').value = user.user_metadata.full_name || "";
+            document.getElementById('new-avatar').value = user.user_metadata.avatar_url || "";
+            if (user.user_metadata.avatar_url) document.getElementById('current-avatar').src = user.user_metadata.avatar_url;
         });
 
-        // 2. 提交表单修改资料
         document.getElementById('profile-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const user = netlifyIdentity.currentUser();
-            if (!user) return;
-
             try {
-                // 调用核心方法：更新用户元数据
-                // 注意：full_name 是 Netlify 的标准字段，avatar_url 是我们自定义的字段
+                // 更新用户元数据
                 await user.update({
                     data: {
-                        full_name: nicknameInput.value,
-                        avatar_url: avatarUrlInput.value
+                        full_name: document.getElementById('new-name').value,
+                        avatar_url: document.getElementById('new-avatar').value
                     }
                 });
-                
-                alert("资料更新成功！");
-                avatarImg.src = avatarUrlInput.value; // 实时更新预览
-            } catch (err) {
-                alert("更新失败: " + err.message);
-            }
+                alert("更新成功！");
+                location.reload();
+            } catch (err) { alert("错误: " + err.message); }
         });
     </script>
 </body>
