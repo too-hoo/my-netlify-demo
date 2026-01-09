@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>会员中心 - 客服门户</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+</head>
+<body>
+    <header><h1>🌟 会员中心</h1></header>
+    <main>
+        <div id="auth-status">
+            <p>欢迎回来，<strong id="user-name">会员</strong>！</p>
+            <p>这是您的专属特权页面。您可以访问基础会员功能。</p>
+            
+            <div id="admin-entrance" style="display: none; background: #fffbe6; padding: 15px; border: 1px solid #ffe58f; border-radius: 8px; margin: 20px 0;">
+                <p style="margin: 0; color: #856404;">🛠 <strong>检测到管理员权限</strong></p>
+                <p style="font-size: 0.9em;">您可以进入后台查看数据统计和客户留言。</p>
+                <a href="/admin.html"><button>进入管理员仪表盘 →</button></a>
+            </div>
+
+            <p><a href="/profile.html">修改个人资料</a></p>
+            <button onclick="netlifyIdentity.logout()">退出登录</button>
+            <p><a href="/">返回首页</a></p>
+        </div>
+    </main>
+
+    <script>
+        netlifyIdentity.init({ locale: 'zh' });
+
+        netlifyIdentity.on('init', user => {
+            if (!user) {
+                window.location.href = "/"; // 未登录重定向到首页
+            } else {
+                document.getElementById('user-name').innerText = user.user_metadata.full_name || "用户";
+                
+                // 鉴权：如果是管理员，显示入口
+                const roles = user.app_metadata.roles || [];
+                if (roles.includes("admin")) {
+                    document.getElementById('admin-entrance').style.display = 'block';
+                }
+            }
+        });
+
+        netlifyIdentity.on('logout', () => window.location.href = "/");
+    </script>
+</body>
+</html>

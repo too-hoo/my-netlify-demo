@@ -2,27 +2,33 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>会员中心</title>
+    <title>管理员后台 - 客服门户</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <h1>🌟 会员专属内容</h1>
-    <p>恭喜，这是一个受保护的页面。只有登录用户才能看到。</p>
-    <div data-netlify-identity-button></div>
-    <p><a href="/">返回首页</a></p>
+    <header>
+        <h1>🛠 管理员仪表盘</h1>
+        <a href="/members.html">返回会员中心</a>
+    </header>
 
-    <div id="admin-tools" style="display: none; border: 2px dashed red; padding: 10px;">
-        <h3>🛠 管理员工具箱</h3>
-        <div style="height: 300px; margin-bottom: 30px;">
-            <canvas id="submissionsChart"></canvas>
-        </div>
-        <p>只有拥有 "admin" 标签的用户才能看到这个区域。</p>
-        <p><a href="https://app.netlify.com/sites/serene-flan-8f8d9f/forms" target="_blank">进入后台查看客户留言</a></p>
-        <ul id="submission-list">正在加载留言...</ul>
-        <button onclick="fetchSubmissions()">刷新数据</button>
-    </div>
+    <main>
+        <section class="container" style="margin-bottom: 30px;">
+            <h3>📈 留言趋势分析</h3>
+            <div style="height: 300px;">
+                <canvas id="submissionsChart"></canvas>
+            </div>
+        </section>
+
+        <section class="container">
+            <h3>💬 客户留言管理</h3>
+            <div id="submission-list-container">
+                <ul id="submission-list">正在加载留言...</ul>
+                <button onclick="fetchSubmissions()" style="background: #666;">刷新列表</button>
+            </div>
+        </section>
+    </main>
 </body>
 <script>
     // 在 script 标签的最开始处添加
@@ -30,6 +36,22 @@
 </script>
 <script>
     let myChart; // 全局变量，方便刷新数据
+
+    // 核心：二次鉴权逻辑
+    netlifyIdentity.on('init', user => {
+        if (!user) {
+            window.location.href = "/";
+        } else {
+            const roles = user.app_metadata.roles || [];
+            if (!roles.includes("admin")) {
+                alert("抱歉，您没有管理员权限！");
+                window.location.href = "/members.html";
+            } else {
+                fetchSubmissions(); // 只有管理员才调取 API
+            }
+        }
+    });
+
     async function fetchSubmissions() {
         const listEl = document.getElementById('submission-list');
         try {

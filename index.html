@@ -15,12 +15,12 @@
     <main>
         <div id="auth-status" style="display:none;">
             <div>
-                <img id="user-avatar" src="" class="avatar" height="100" width="100" style="display:none;">
+                <img id="user-avatar" src="" class="avatar" height="30" width="30" style="display:none;">
                 <span>欢迎回来，<strong id="user-name"></strong></span>
             </div>
             <div>
-                <a href="/profile.html">账户设置</a> | 
-                <span id="admin-link" style="display:none;"><a href="/admin.html">管理后台</a></span>
+                <a href="/profile.html">账户设置</a> ❤
+                <span id="admin-link" style="display:none;"><a href="/members.html">会员后台</a></span>
             </div>
         </div>
 
@@ -69,7 +69,11 @@
         }
 
         netlifyIdentity.on('init', updateUI);
-        netlifyIdentity.on('login', user => { updateUI(user); netlifyIdentity.close(); });
+        netlifyIdentity.on('login', user => { 
+            updateUI(user); 
+            netlifyIdentity.close();
+            window.location.href = "/members.html"; 
+        });
         netlifyIdentity.on('logout', () => location.reload());
     </script>
 </body>

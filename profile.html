@@ -13,35 +13,81 @@
             <img id="current-avatar" src="https://via.placeholder.com/100" class="avatar" style="width:100px; height:100px;">
         </div>
         <form id="profile-form">
+            <p>
+                <label>上传头像 (本地文件):</label>
+                <input type="file" id="avatar-file" accept="image/*">
+            </p>
             <p><label>昵称: <input type="text" id="new-name" required></label></p>
-            <p><label>头像图片链接: <input type="url" id="new-avatar" placeholder="https://..."></label></p>
-            <button type="submit">保存更新</button>
+            <input type="hidden" id="new-avatar">
+            <button type="submit" id="save-btn">保存更新</button>
         </form>
     </main>
     <script>
         netlifyIdentity.init({ locale: 'zh' });
         
+        const avatarInput = document.getElementById('avatar-file');
+        const avatarPreview = document.getElementById('current-avatar');
+        const hiddenAvatarUrl = document.getElementById('new-avatar');
+
+        // 1. 监听文件选择：立即预览并压缩图片
+        avatarInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    // 使用 Canvas 压缩图片到 100x100 像素
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 100;
+                    canvas.height = 100;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, 100, 100);
+                    
+                    // 转为 Base64 字符串
+                    const base64 = canvas.toDataURL('image/jpeg', 0.7);
+                    avatarPreview.src = base64;
+                    hiddenAvatarUrl.value = base64;
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // 2. 初始化加载数据
         netlifyIdentity.on('init', user => {
             if (!user) window.location.href = "/";
             document.getElementById('new-name').value = user.user_metadata.full_name || "";
-            document.getElementById('new-avatar').value = user.user_metadata.avatar_url || "";
-            if (user.user_metadata.avatar_url) document.getElementById('current-avatar').src = user.user_metadata.avatar_url;
+            const savedAvatar = user.user_metadata.avatar_url;
+            if (savedAvatar) {
+                avatarPreview.src = savedAvatar;
+                hiddenAvatarUrl.value = savedAvatar;
+            }
         });
 
+        // 3. 保存资料更新
         document.getElementById('profile-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const saveBtn = document.getElementById('save-btn');
+            saveBtn.innerText = "正在保存...";
+            saveBtn.disabled = true;
+
             const user = netlifyIdentity.currentUser();
             try {
-                // 更新用户元数据
                 await user.update({
                     data: {
                         full_name: document.getElementById('new-name').value,
-                        avatar_url: document.getElementById('new-avatar').value
+                        avatar_url: hiddenAvatarUrl.value
                     }
                 });
-                alert("更新成功！");
+                alert("资料已同步到云端！");
                 location.reload();
-            } catch (err) { alert("错误: " + err.message); }
+            } catch (err) { 
+                alert("错误: " + err.message); 
+                saveBtn.innerText = "保存更新";
+                saveBtn.disabled = false;
+            }
         });
     </script>
 </body>

@@ -1,9 +1,54 @@
 <!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><title>提交成功</title></head>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>提交成功 - 客服门户</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* 针对成功页面的微调：内容居中 */
+        .success-card {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+        .success-icon {
+            font-size: 4rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 1.5rem;
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: bold;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
 <body>
-    <h1>已收到您的信息！</h1>
-    <p>我们会尽快联系您。</p>
-    <a href="/">返回首页</a>
+    <header>
+        <h1>🚀 客服门户</h1>
+    </header>
+
+    <main class="success-card">
+        <div class="success-icon">✅</div>
+        
+        <h1>已收到您的信息！</h1>
+        <p>感谢您的反馈。我们的团队会在 24 小时内通过邮件与您取得联系，请留意您的收件箱。</p>
+        
+        <a href="/" title="返回首页">
+            <button type="button">返回首页</button>
+        </a>
+        
+        <br>
+        <a href="/profile.html" class="back-link">前往个人中心 →</a>
+    </main>
+
+    <footer style="text-align: center; color: #888; margin-top: 2rem; font-size: 0.9em;">
+        © 2026 Serene Flan 客服系统
+    </footer>
 </body>
 </html>
