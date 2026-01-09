@@ -38,11 +38,24 @@
             <hr>
             <p>🌟 检测到您已登录，点击进入 <a href="/admin.html">会员专属页面</a></p>
         </section>
+        <div id="user-info" style="display:none;">
+            <span>欢迎，<span id="display-name"></span>！</span>
+            <a href="/profile.html">修改资料</a> | 
+            <a href="#" onclick="netlifyIdentity.logout()">退出</a>
+        </div>
     </main>
     <script>
         // 在 script 标签的最开始处添加
         netlifyIdentity.init({
         locale: 'zh' 
+        });
+    </script>
+    <script>
+        netlifyIdentity.on('init', user => {
+            if (user) {
+                document.getElementById('display-name').innerText = user.user_metadata.full_name || "新用户";
+                document.getElementById('user-info').style.display = "block";
+            }
         });
     </script>
     <script>
